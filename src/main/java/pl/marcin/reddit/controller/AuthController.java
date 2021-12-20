@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.marcin.reddit.dto.AuthenticationResponse;
+import pl.marcin.reddit.dto.LoginRequest;
 import pl.marcin.reddit.dto.RegisterRequest;
 import pl.marcin.reddit.service.AuthService;
 
@@ -24,5 +26,10 @@ public class AuthController {
     public ResponseEntity<String> verifyAccount(@PathVariable String token){
         authService.verifyAccount(token);
         return new ResponseEntity<>("Account activated successfully", HttpStatus.OK);
+    }
+
+    @PostMapping("/login")
+    public AuthenticationResponse login(@RequestBody LoginRequest loginRequest){
+       return authService.login(loginRequest);
     }
 }
