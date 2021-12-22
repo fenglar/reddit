@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import pl.marcin.reddit.dto.SubredditDto;
+import pl.marcin.reddit.exception.RedditException;
+import pl.marcin.reddit.mapper.SubredditMapper;
 import pl.marcin.reddit.model.Subreddit;
 import pl.marcin.reddit.repository.SubredditRepository;
 
@@ -19,10 +21,11 @@ import static java.util.stream.Collectors.toList;
 public class SubredditService {
 
     private final SubredditRepository subredditRepository;
+    private final SubredditMapper subredditMapper;
 
     @Transactional
     public SubredditDto save(SubredditDto subredditDto) {
-        Subreddit save = subredditRepository.save(mapSubredditDto(subredditDto));
+        Subreddit save = subredditRepository.save(subredditMapper.mapDtoToSubreddit(subredditDto));
         subredditDto.setId(save.getId());
         return subredditDto;
 
@@ -30,17 +33,13 @@ public class SubredditService {
 
     @Transactional(readOnly = true)
     public List<SubredditDto> getAll() {
-        return subredditRepository.findAll().stream().map(this::mapToDto).collect(toList());
-    }
-
-    private SubredditDto mapToDto(Subreddit subreddit) {
-        return SubredditDto.builder().name(subreddit.getName())
-                .id(subreddit.getId()).numberOfPosts(subreddit.getPosts().size()).build();
-    }
-
-    private Subreddit mapSubredditDto(SubredditDto subredditDto) {
-        return Subreddit.builder().name(subredditDto.getName()).description(subredditDto.getDescription()).build();
+        return subredditRepository.findAll().stream().map(subredditMapper::mapSubredditToDto).collect(toList());
     }
 
 
+    public SubredditDto getSubreddit(Long id) {
+        Subreddit subreddit = subredditRepository.findById(id)
+                .orElseThrow(() -> new RedditException("No subreddit found with id: "+id));
+        return subredditMapper.mapSubredditToDto(subreddit);
+    }
 }
